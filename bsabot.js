@@ -58,6 +58,8 @@ client.on('message', msg => {
                 if(msg.member.permissions.has("MANAGE_MESSAGES") || message.member.roles.find(r => r.name === "MC-Mod")) msg.reply('```Moderation Commands\n\n.say <message>\n.warn <user> [reason]\n.mute <user> [reason]\n.tempmute <user> <duration> [reason]\n.unmute <user> [reason]\n.kick <user> [reason]\n.ban <user> [reason]\n.tempban <user> <duration> [reason]\n.unban <user\'s id>\n.slowmode <duration>\n.clear <num of messages>\n.modmail <user> <message>\n\nMinecraft Commands\n\n.mcmute <user> [reason]\n.mcunmute <user> [reason]\n\nServer Commands\n\n.ip\n.invite```');
                 else msg.reply('```.ip -- Minecraft Information\n.invite -- Gives you the server invite```');
                 break;
+
+
             case "say":
                 if (msg.content.split(' ')[1] === 'help' && msg.content.split(' ').length == 2) {
                     msg.reply('`Usage: .say <message>`');
@@ -67,6 +69,8 @@ client.on('message', msg => {
                     msg.channel.send((msg.content.substring(4)));
                 }
                 break;
+
+
             case "warn":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -90,6 +94,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "mute":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -117,6 +123,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "mcmute":
                 if(msg.member.permissions.has("MANAGE_ROLES") || msg.member.roles.cache.find(r => r.name === "MC-Mod")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -144,6 +152,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "mcunmute":
                 if(msg.member.permissions.has("MANAGE_ROLES") || msg.member.roles.cache.find(r => r.name === "MC-Mod")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -171,6 +181,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "tempmute":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -249,6 +261,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "unmute":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -276,6 +290,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "kick":
                 if (msg.member.hasPermission("KICK_MEMBERS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -311,6 +327,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "ban":
                 if (msg.member.hasPermission("BAN_MEMBERS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -346,6 +364,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "tempban":
                 if(msg.member.permissions.has("BAN_MEMBERS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -447,6 +467,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "slowmode": 
                 if(msg.member.permissions.has("MANAGE_CHANNELS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -472,6 +494,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "clear":
                 if(msg.member.permissions.has("MANAGE_MESSAGES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -498,6 +522,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "modmail":
                 if(msg.member.permissions.has("MANAGE_MESSAGES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -522,6 +548,8 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
+
+
             case "uinfo":
                 if(msg.member.permissions.has("ADMINISTRATOR")) {
                     msg.reply("This is still in development");
@@ -608,19 +636,38 @@ client.on('messageReactionAdd', (reaction, user) => {
                 role = msg.channel.guild.roles.cache.find(role => role.name === "MC-Announcements");
                 if (role) reaction.message.guild.member(user).roles.add(role);
                 break;
+            case "🎙":
+                role = msg.channel.guild.roles.cache.find(role => role.name === "PC-Announcements");
+                if (role) reaction.message.guild.member(user).roles.add(role);
+                break;
             default:
                 role = msg.channel.guild.roles.cache.find(role => role.name === emoji.name);
                 if (role) reaction.message.guild.member(user).roles.add(role);
                 break;
         }
     }
-    else if (msg.channel.id === annocReq && !user.bot && reaction.message.guild.member(user).hasPermission("ADMINISTRATOR") && emoji.name === "✅") {
-        msg.channel.messages.fetch(msg.id)
-            .then(message => {
-                client.channels.fetch(announcements)
-                    .then (chn => { 
-                        chn.send(message.content); })
-            .catch(console.error); });
+    else if (msg.channel.id === annocReq && !user.bot && reaction.message.guild.member(user).hasPermission("ADMINISTRATOR")) {
+        if (emoji.name === "✅") {
+            msg.channel.messages.fetch(msg.id)
+                .then(message => {
+                    client.channels.fetch(announcements)
+                        .then (chn => { 
+                            msg = chn.send(message.content); 
+                            msg.crosspost();
+                        })
+                .catch(console.error); 
+            });
+        }
+        else if (emoji.name === "❌") {
+            msg.channel.messages.fetch(msg.id)
+                .then(message => {
+                    message.awaitReactions({ time: 15000 })
+                        .then(collected => {
+                            collected.forEach(element => element.remove());
+                        })
+                        .catch(console.error);
+            });
+        }
     }
 });
 

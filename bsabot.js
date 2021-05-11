@@ -21,8 +21,10 @@ const adminCatsChn = ["703350815548506114", "703350816416858185", "8139661119052
 const mcIp = "bsamemes.mcs.cx";
 const invite = "https://discord.gg/cgz3tUP";
 
-const bl_full = fs.readFileSync("./bl_full.txt").split("\n");
-const bl_less = fs.readFileSync("./bl_less.txt").split("\n");
+let text = fs.readFileSync("./bl_full.txt");
+bl_full = text.split("\n")
+text = fs.readFileSync("./bl_less.txt");
+bl_less = text.split("\n")
 
 sql.run("CREATE TABLE IF NOT EXISTS userData (offendee TEXT, time TEXT, action TEXT, reason TEXT, author TEXT, duration TEXT, active TEXT)");
 

@@ -7,7 +7,7 @@ const Discord = require('discord.js');
 const fs = require("fs");
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
-const token = fs.readFileSync("./bsabot_token.txt");
+const token = fs.readFileSync("./bsabot_token.txt", "utf-8");
 const prefix = '.';
 
 const serverID = "703350815494111243";

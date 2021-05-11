@@ -1,2 +1,4 @@
 *.txt
 *.sql
+package-lock.json
+/node_modules

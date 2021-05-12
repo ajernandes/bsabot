@@ -8,6 +8,7 @@ const fs = require("fs");
 const bsabot_config = require('./bsabot_config');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const moment = require('moment');
+const { mcAnnouncements } = require('./bsabot_config');
 var infoEmbed;
 const token = bsabot_config.token;
 const prefix = '.';
@@ -16,6 +17,7 @@ const bl_full = fs.readFileSync("./bl_full.txt", "utf-8").replaceAll("\r", "").s
 const bl_less = fs.readFileSync("./bl_less.txt", "utf-8").replaceAll("\r", "").split("\n");
 
 sql.run("CREATE TABLE IF NOT EXISTS userData (offendee TEXT, time TEXT, action TEXT, reason TEXT, author TEXT, duration TEXT, active TEXT)");
+sql.run("CREATE TABLE IF NOT EXISTS announcements (message TEXT, sendTime TEXT, channel TEXT)");
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -618,19 +620,78 @@ client.on('messageReactionAdd', (reaction, user) => {
     }
     else if (msg.channel.id === bsabot_config.annocReq && !user.bot && reaction.message.guild.member(user).hasPermission("ADMINISTRATOR")) {
         if (emoji.name === "✅") {
-            msg.channel.messages.fetch(msg.id)
-                .then(message => {
-                    client.channels.fetch(bsabot_config.announcements)
-                        .then (chn => { 
-                            let attachmentString = "";
-                            (message.attachments).array().forEach(function(attachment) {
+            try {
+                if (msg.content.startsWith(".delay ")) {
+                    let duration = msg.content.split(' ')[1];
+                    if (/(\.*[0-9]+([ywdhms]|^mo$))+/i.test(duration)) {
+                        var secDuration = 0;
+                        var i;
+                        while (duration != "" || duration != '') {
+                            i = 0;
+                            while (/\.*[0-9]+/g.test(duration.charAt(i))) {
+                                i++;
+                            }
+                            switch (duration.charAt(i)) {
+                                case 'y':
+                                    secDuration += duration.substring(0,i) * 365 * 24 * 60 * 60 * 1000;
+                                    break;
+                                case 'w':
+                                    secDuration += duration.substring(0,i) * 7 * 24 * 60 * 60 * 1000;
+                                    break;
+                                case 'd':
+                                    secDuration += duration.substring(0,i) * 24 * 60 * 60 * 1000;
+                                    break;
+                                case 'h':
+                                    secDuration += duration.substring(0,i) * 60 * 60 * 1000;
+                                    break;
+                                case 'm':
+                                    console.log(duration.charAt(i + 1));
+                                    if (duration.charAt(i + 1) != 'o') secDuration += duration.substring(0,i) * 60 * 1000;
+                                    else {
+                                        secDuration += duration.substring(0,i) * 30 * 24 * 60 * 60 * 1000;
+                                        duration = duration.substring(1);
+                                    }
+                                    break;
+                                case 's':
+                                    secDuration += duration.substring(0,i) * 1000;
+                                    break;
+                                default:
+                                    return;
+                                    break;     
+                            }
+                            duration = duration.substring(i + 1);
+                        }
+                        let attachmentString = "";
+                            (msg.attachments).array().forEach(function(attachment) {
                                 attachmentString = attachmentString + attachment.url + "\n";
-                              })        
-                            msg = chn.send(message.content + "\n" + attachmentString); 
-                            msg.crosspost()
-                        })
-                .catch(console.error); 
-            });
+                              }) 
+                        let message = msg.content.split(' ').slice(2).join(' ') + "\n" + attachmentString;
+                        //console.log(msg.createdTimestamp)
+                        sql.run("INSERT INTO announcements (message, sendTime, channel) VALUES (?, ?, ?)", [message, msg.createdTimestamp + secDuration, bsabot_config.announcements]);
+                    }
+                    else {
+                        msg.reply("❌ Please enter a valid duration. (ex 1h30m)");
+                    }
+                } 
+                else {
+                msg.channel.messages.fetch(msg.id)
+                    .then(message => {
+                        client.channels.fetch(bsabot_config.announcements)
+                            .then (chn => { 
+                                let attachmentString = "";
+                                (message.attachments).array().forEach(function(attachment) {
+                                    attachmentString = attachmentString + attachment.url + "\n";
+                                  })        
+                                msg = chn.send(message.content + "\n" + attachmentString); 
+                                //msg.crosspost()
+                            })
+                    .catch(console.error); 
+                    });
+                }
+            }
+            catch {
+                msg.reply("Could not read message contents, please resend the message.");
+            }
         }
         else if (emoji.name === "❌") {
             msg.channel.messages.fetch(msg.id)
@@ -641,19 +702,83 @@ client.on('messageReactionAdd', (reaction, user) => {
     }
     else if (msg.channel.id === bsabot_config.mcAnnocReq && !user.bot && (reaction.message.guild.roles.cache.find(r => r.name === "MC-Admin") || reaction.message.member.permissions.has("ADMINISTRATOR"))) {
         if (emoji.name === "✅") {
-            msg.channel.messages.fetch(msg.id)
-                .then(message => {
-                    client.channels.fetch(bsabot_config.mcAnnouncements)
-                        .then (chn => { 
+            try {
+                if (msg.content.startsWith(".delay ")) {
+                    let duration = msg.content.split(' ')[2];
+                    if (/(\.*[0-9]+([ywdhms]|^mo$))+/i.test(duration)) {
+                        var secDuration = 0;
+                        var i;
+                        try {
+                            while (duration != "" || duration != '') {
+                                i = 0;
+                                while (/\.*[0-9]+/g.test(duration.charAt(i))) {
+                                    i++;
+                                }
+                                switch (duration.charAt(i)) {
+                                    case 'y':
+                                        secDuration += duration.substring(0,i) * 365 * 24 * 60 * 60 * 1000;
+                                        break;
+                                    case 'w':
+                                        secDuration += duration.substring(0,i) * 7 * 24 * 60 * 60 * 1000;
+                                        break;
+                                    case 'd':
+                                        secDuration += duration.substring(0,i) * 24 * 60 * 60 * 1000;
+                                        break;
+                                    case 'h':
+                                        secDuration += duration.substring(0,i) * 60 * 60 * 1000;
+                                        break;
+                                    case 'm':
+                                        console.log(duration.charAt(i + 1));
+                                        if (duration.charAt(i + 1) != 'o') secDuration += duration.substring(0,i) * 60 * 1000;
+                                        else {
+                                            secDuration += duration.substring(0,i) * 30 * 24 * 60 * 60 * 1000;
+                                            duration = duration.substring(1);
+                                        }
+                                        break;
+                                    case 's':
+                                        secDuration += duration.substring(0,i) * 1000;
+                                        break;
+                                    default:
+                                        return;
+                                        break;     
+                                }
+                                duration = duration.substring(i + 1);
+                            }
                             let attachmentString = "";
-                            (message.attachments).array().forEach(function(attachment) {
-                                attachmentString = attachmentString + attachment.url + "\n";
-                              })        
-                            msg = chn.send(message.content + "\n" + attachmentString); 
-                            msg.crosspost()
-                        })
-                .catch(console.error); 
-            });
+                                (msg.attachments).array().forEach(function(attachment) {
+                                    attachmentString = attachmentString + attachment.url + "\n";
+                                  }) 
+                            let message = msg.content.split(' ').slice(2).join(' ') + "\n" + attachmentString;
+
+                            sql.run("INSERT INTO announcements (message, sendTime, channel) VALUES (?, ?, ?)", [message, msg.createdTimestamp + duration, bsabot_config.mcAnnouncements]);
+                        }
+                        catch {
+                            msg.reply("❌ I can't do that!");
+                        }
+                    }
+                    else {
+                        msg.reply("❌ Please enter a valid duration. (ex 1h30m)");
+                    }
+                } 
+                else {
+                msg.channel.messages.fetch(msg.id)
+                    .then(message => {
+                        client.channels.fetch(bsabot_config.announcements)
+                            .then (chn => { 
+                                let attachmentString = "";
+                                (message.attachments).array().forEach(function(attachment) {
+                                    attachmentString = attachmentString + attachment.url + "\n";
+                                  })        
+                                msg = chn.send(message.content + "\n" + attachmentString); 
+                                msg.crosspost()
+                            })
+                    .catch(console.error); 
+                    });
+                }
+            } 
+            catch {
+                msg.reply("Could not read message contents, please resend the message.");
+            }
         }
         else if (emoji.name === "❌") {
             msg.channel.messages.fetch(msg.id)
@@ -841,4 +966,15 @@ setInterval(function(){
             }
         }
     }); 
+    sql.each("SELECT message, sendTime, channel FROM announcements", function(err, tabl) {
+        console.log(tabl.sendTime - Date.now())
+        if (tabl.sendTime <= Date.now()) {
+            client.channels.fetch(tabl.channel)
+                .then (chn => { 
+                    msg = chn.send(tabl.message); 
+                    //msg.crosspost()
+                })
+            sql.run(`DELETE FROM announcements WHERE message = '${tabl.message}' AND sendTime = ${tabl.sendTime} AND channel = ${tabl.channel}`)
+        }
+    });
 }, 1000);

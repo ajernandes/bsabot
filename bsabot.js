@@ -5,27 +5,17 @@ const ms = require("ms");
 const dateFormat = require("dateformat");
 const Discord = require('discord.js');
 const fs = require("fs");
+const bsabot_config = require('./bsabot_config');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
-
-const token = fs.readFileSync("./bsabot_token.txt", "utf-8");
+const moment = require('moment');
+var infoEmbed;
+const token = bsabot_config.token;
 const prefix = '.';
 
-const serverID = "703350815494111243";
-const modmail = "703350815548506121";
-const modlog = "703350815548506117";
-const minecraftInfo = "801948133730811935";
-const welcome = "703350815884181518"
-const annocReq = "703421921219575828";
-const announcements = "703350815884181519";
-const adminCatsChn = ["703350815548506114", "703350816416858185", "813966111905284116", "813953673432530964", "810035711339134976", "743990050001518602", "797624792995201044"];
-const mcIp = "bsamemes.mcs.cx";
-const invite = "https://discord.gg/cgz3tUP";
-
-const bl_full = fs.readFileSync("./bl_full.txt", "utf-8").split("\n");
-const bl_less = fs.readFileSync("./bl_less.txt", "utf-8").split("\n");
+const bl_full = fs.readFileSync("./bl_full.txt", "utf-8").replaceAll("\r", "").split("\n");
+const bl_less = fs.readFileSync("./bl_less.txt", "utf-8").replaceAll("\r", "").split("\n");
 
 sql.run("CREATE TABLE IF NOT EXISTS userData (offendee TEXT, time TEXT, action TEXT, reason TEXT, author TEXT, duration TEXT, active TEXT)");
-
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -40,12 +30,11 @@ client.on('ready', () => {
   });
 
 client.on('message', msg => {
-    if (msg.channel.id === annocReq && !msg.author.bot) {
+    if ((msg.channel.id === bsabot_config.annocReq || msg.channel.id === bsabot_config.mcAnnocReq) && !msg.author.bot) {
         msg.react("✅");
         msg.react("❌");
-        //msg.channel.send("Announcement awaiting approval!");
     }
-    if (isSwear(msg) && !adminCatsChn.includes(msg.channel.parent.id) &&!adminCatsChn.includes(msg.channel.id) && !msg.author.bot) {
+    if (isSwear(msg) && !bsabot_config.adminCatsChn.includes(msg.channel.parent.id) && !bsabot_config.adminCatsChn.includes(msg.channel.id) && !msg.author.bot) {
         msg.reply("Watch your language");
         logEvent(msg, 'Warned', `Swear filter: ${msg.content}`, null, true);
         msg.delete();
@@ -58,8 +47,6 @@ client.on('message', msg => {
                 if(msg.member.permissions.has("MANAGE_MESSAGES") || message.member.roles.find(r => r.name === "MC-Mod")) msg.reply('```Moderation Commands\n\n.say <message>\n.warn <user> [reason]\n.mute <user> [reason]\n.tempmute <user> <duration> [reason]\n.unmute <user> [reason]\n.kick <user> [reason]\n.ban <user> [reason]\n.tempban <user> <duration> [reason]\n.unban <user\'s id>\n.slowmode <duration>\n.clear <num of messages>\n.modmail <user> <message>\n\nMinecraft Commands\n\n.mcmute <user> [reason]\n.mcunmute <user> [reason]\n\nServer Commands\n\n.ip\n.invite```');
                 else msg.reply('```.ip -- Minecraft Information\n.invite -- Gives you the server invite```');
                 break;
-
-
             case "say":
                 if (msg.content.split(' ')[1] === 'help' && msg.content.split(' ').length == 2) {
                     msg.reply('`Usage: .say <message>`');
@@ -69,8 +56,6 @@ client.on('message', msg => {
                     msg.channel.send((msg.content.substring(4)));
                 }
                 break;
-
-
             case "warn":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -94,8 +79,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "mute":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -123,8 +106,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "mcmute":
                 if(msg.member.permissions.has("MANAGE_ROLES") || msg.member.roles.cache.find(r => r.name === "MC-Mod")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -152,8 +133,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "mcunmute":
                 if(msg.member.permissions.has("MANAGE_ROLES") || msg.member.roles.cache.find(r => r.name === "MC-Mod")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -181,8 +160,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "tempmute":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -261,8 +238,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "unmute":
                 if(msg.member.permissions.has("MANAGE_ROLES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -290,8 +265,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "kick":
                 if (msg.member.hasPermission("KICK_MEMBERS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -327,8 +300,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "ban":
                 if (msg.member.hasPermission("BAN_MEMBERS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -364,8 +335,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "tempban":
                 if(msg.member.permissions.has("BAN_MEMBERS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -467,8 +436,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "slowmode": 
                 if(msg.member.permissions.has("MANAGE_CHANNELS")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -494,8 +461,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "clear":
                 if(msg.member.permissions.has("MANAGE_MESSAGES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -522,8 +487,6 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "modmail":
                 if(msg.member.permissions.has("MANAGE_MESSAGES")) {
                     if (msg.content.split(' ')[1] === 'help') {
@@ -548,29 +511,28 @@ client.on('message', msg => {
                     msg.reply("❌ You can't use that!");
                 }
                 break;
-
-
             case "uinfo":
-                if(msg.member.permissions.has("ADMINISTRATOR")) {
-                    msg.reply("This is still in development");
-                    return;
+                if(msg.member.permissions.has("KICK_MEMBERS")) {
                     if (msg.content.split(' ')[1] === 'help') {
                         msg.reply('`Usage: .uinfo <user>`');
                           return;
                     }
                     if (msg.mentions.users.first()) {
                         try {
-                            var infoEmbed = new Discord.MessageEmbed()
+                            sql.all(`SELECT time,action,reason,duration FROM userData WHERE offendee = ${msg.mentions.users.first().id} LIMIT 10`, function(err, tabl) {
+                                infoEmbed = new Discord.MessageEmbed()
                                 .setColor('#ee38ff')
                                 .setTitle(`${msg.mentions.members.first().displayName}'s Information`)
-                            sql.each(`SELECT time,action,reason,duration FROM userData WHERE offendee = ${msg.mentions.users.first().id} LIMIT 25`, function(err, tabl) {
-                                date = dateFormat(parseInt(tabl.time), "mmm-d-yy h:MM TT")
-                                if (tabl.action != 'Temporarily Muted' || tabl.action != 'Temporarily banned') infoEmbed.addField(tabl.action, `${date}\n${tabl.reason}`, true)
-                                else if (tabl.active) infoEmbed.addField(tabl.action, `${date}\n${tabl.reason}, ${ms(tabl.duration, { long: true })}, Active`, true)
-                                else infoEmbed = infoEmbed.addField(tabl.action, `${date}\n${tabl.reason}, ${ms(tabl.duration, { long: true })}, Compleated`, true)
-                                console.log(`${date} | ${tabl.action} | ${tabl.reason} | ${tabl.active} | ${tabl.duration}`)
-                            });
-                            msg.channel.send(infoEmbed);
+                                .addField("Account info", `Joined server: ${moment(msg.mentions.members.first().joinedAt).format("M/D/YY h:mm A")} \n Account created: ${moment(msg.mentions.users.first().createdAt).format("M/D/YY h:mm A")}`)
+                                tabl.reverse().forEach(element => {
+                                    date = dateFormat(parseInt(element.time), "m/d/yy h:MM TT")
+                                    if (element.action != 'Temporarily Muted' || element.action != 'Temporarily banned') infoEmbed.addField(element.action, `${date}\n${element.reason}`, true)
+                                    else if (element.active) infoEmbed.addField(element.action, `${date}\n${element.reason}, ${ms(element.duration, { long: true })}, Active`, true)
+                                    else  infoEmbed.addField(element.action, `${date}\n${element.reason}, ${ms(element.duration, { long: true })}, Compleated`, true)
+                                    console.log(`${date} | ${element.action} | ${element.reason} | ${element.active} | ${element.duration}`)
+                                })
+                                msg.channel.send(infoEmbed);
+                            })
                         }
                         catch {
                             console.error(error);
@@ -585,10 +547,10 @@ client.on('message', msg => {
                 }
                 break;
             case "ip":
-                msg.channel.send(`\`${mcIp}\` | Java\nCheck out more in <#${minecraftInfo}>`);
+                msg.channel.send(`\`${bsabot_config.mcIp}\` | Java\nCheck out more in <#${bsabot_config.minecraftInfo}>`);
                 break;
             case "invite":
-                msg.channel.send(invite);
+                msg.channel.send(bsabot_config.invite);
                 break;
             default:
                 console.log(`Unknown Command ${msg.content}`);
@@ -596,17 +558,20 @@ client.on('message', msg => {
         }
     }
     else if (msg.guild === null && !msg.author.bot) {
-        client.channels.fetch(modmail)
+        client.channels.fetch(bsabot_config.modmail)
             .then(channel => {
-                channel.send(`Message from <@${msg.author.id}> (${msg.author.id}): \n ${msg.content}`);
-                //else channel.send(`Message from <@${msg.author.id}> (${msg.author.id}): \n ${msg.content}\n ${msg.attachments.url}`);
+                let attachmentString = "";
+                (msg.attachments).array().forEach(function(attachment) {
+                    attachmentString = attachmentString + attachment.url + "\n";
+                  })                  
+                channel.send(`Message from <@${msg.author.id}> (${msg.author.id}): \n ${msg.content} \n ${attachmentString}`);
             });
     }
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
     let msg = reaction.message, emoji = reaction.emoji;
-    if (msg.channel.id === welcome && !user.bot && msg.channel.guild) {
+    if (msg.channel.id === bsabot_config.welcome && !user.bot && msg.channel.guild) {
         switch (emoji.name) {
             case "SeaScouts":
                 role = msg.channel.guild.roles.cache.find(role => role.name === "Sea Scout");
@@ -636,24 +601,24 @@ client.on('messageReactionAdd', (reaction, user) => {
                 role = msg.channel.guild.roles.cache.find(role => role.name === "MC-Announcements");
                 if (role) reaction.message.guild.member(user).roles.add(role);
                 break;
-            case "🎙":
-                role = msg.channel.guild.roles.cache.find(role => role.name === "PC-Announcements");
-                if (role) reaction.message.guild.member(user).roles.add(role);
-                break;
             default:
                 role = msg.channel.guild.roles.cache.find(role => role.name === emoji.name);
                 if (role) reaction.message.guild.member(user).roles.add(role);
                 break;
         }
     }
-    else if (msg.channel.id === annocReq && !user.bot && reaction.message.guild.member(user).hasPermission("ADMINISTRATOR")) {
+    else if (msg.channel.id === bsabot_config.annocReq && !user.bot && reaction.message.guild.member(user).hasPermission("ADMINISTRATOR")) {
         if (emoji.name === "✅") {
             msg.channel.messages.fetch(msg.id)
                 .then(message => {
-                    client.channels.fetch(announcements)
+                    client.channels.fetch(bsabot_config.announcements)
                         .then (chn => { 
-                            msg = chn.send(message.content); 
-                            msg.crosspost();
+                            let attachmentString = "";
+                            (message.attachments).array().forEach(function(attachment) {
+                                attachmentString = attachmentString + attachment.url + "\n";
+                              })        
+                            msg = chn.send(message.content + "\n" + attachmentString); 
+                            msg.crosspost()
                         })
                 .catch(console.error); 
             });
@@ -661,11 +626,30 @@ client.on('messageReactionAdd', (reaction, user) => {
         else if (emoji.name === "❌") {
             msg.channel.messages.fetch(msg.id)
                 .then(message => {
-                    message.awaitReactions({ time: 15000 })
-                        .then(collected => {
-                            collected.forEach(element => element.remove());
+                    message.reactions.removeAll();
+            });
+        }
+    }
+    else if (msg.channel.id === bsabot_config.mcAnnocReq && !user.bot && reaction.message.member.roles.find(r => r.name === "MC-Admin")) {
+        if (emoji.name === "✅") {
+            msg.channel.messages.fetch(msg.id)
+                .then(message => {
+                    client.channels.fetch(bsabot_config.mcAnnouncements)
+                        .then (chn => { 
+                            let attachmentString = "";
+                            (message.attachments).array().forEach(function(attachment) {
+                                attachmentString = attachmentString + attachment.url + "\n";
+                              })        
+                            msg = chn.send(message.content + "\n" + attachmentString); 
+                            msg.crosspost()
                         })
-                        .catch(console.error);
+                .catch(console.error); 
+            });
+        }
+        else if (emoji.name === "❌") {
+            msg.channel.messages.fetch(msg.id)
+                .then(message => {
+                    message.reactions.removeAll();
             });
         }
     }
@@ -673,7 +657,7 @@ client.on('messageReactionAdd', (reaction, user) => {
 
 client.on('messageReactionRemove', (reaction, user) => {
     let msg = reaction.message, emoji = reaction.emoji;
-    if (msg.channel.id === welcome && !user.bot && msg.channel.guild) {
+    if (msg.channel.id === bsabot_config.welcome && !user.bot && msg.channel.guild) {
         switch (emoji.name) {
             case "SeaScouts":
                 role = msg.channel.guild.roles.cache.find(role => role.name === "Sea Scout");
@@ -714,7 +698,7 @@ client.on('messageReactionRemove', (reaction, user) => {
 client.on('guildMemberAdd', member => {
     sql.each("SELECT MAX(time),offendee,duration,active FROM userData WHERE (action = 'Temporarily Muted' OR action = 'Muted') AND active = 'true' GROUP BY offendee", function(err, tabl) {
         if (member.id == tabl.offendee) {
-            guild = client.guilds.cache.get(serverID);
+            guild = client.guilds.cache.get(bsabot_config.serverID);
             role = guild.roles.cache.find(role => role.name === "Muted");
             if (role) guild.members.cache.get(tabl.offendee).roles.add(role);
         }
@@ -725,7 +709,7 @@ client.login(token);
 
 function logEvent(msg, action, reason = "unspecified", duration, isAuto = false, offendee) {
     if (reason === null || reason === "") reason = "unspecified";
-    client.channels.fetch(modlog)
+    client.channels.fetch(bsabot_config.modlog)
         .then(chn => {
             if (['Warned', 'Muted', 'MC Muted', 'Temporarily Muted', 'MC Unmuted', 'Unmuted', 'Kicked', 'Banned', 'Temporarily Banned', 'Unbanned'].includes(action)) {
                 if (isAuto) {
@@ -818,7 +802,7 @@ setInterval(function(){
     sql.each("SELECT MAX(time),offendee,duration,active FROM userData WHERE action = 'Temporarily Muted' AND active = 'true'  GROUP BY offendee", function(err, tabl) {
         if(tabl && (parseInt(tabl['MAX(time)']) + parseInt(tabl.duration) <= Date.now())) {
             try {
-                guild = client.guilds.cache.get(serverID);
+                guild = client.guilds.cache.get(bsabot_config.serverID);
                 role = guild.roles.cache.find(role => role.name === "Muted");
                 if (role) guild.members.cache.get(tabl.offendee).roles.remove(role);
                 sql.run(`UPDATE userData SET active = 'false' WHERE offendee = '${tabl.offendee}' AND active = 'true'`);
@@ -833,7 +817,7 @@ setInterval(function(){
     sql.each("SELECT MAX(time),offendee,duration,active FROM userData WHERE action = 'Temporarily Banned' AND active = 'true' GROUP BY offendee", function(err, tabl) {
         if(tabl && (parseInt(tabl['MAX(time)']) + parseInt(tabl.duration) <= Date.now())) {
             try {
-                guild = client.guilds.cache.get(serverID);
+                guild = client.guilds.cache.get(bsabot_config.serverID);
                 guild.members.unban(tabl.offendee);
                 sql.run(`UPDATE userData SET active = 'false' WHERE offendee = '${tabl.offendee}' AND active = 'true'`);
                 logEvent(null, 'Unbanned', "Tempban ended", null, true, tabl.offendee);

@@ -527,7 +527,7 @@ client.on('message', msg => {
                             sql.all(`SELECT time,action,reason,duration FROM userData WHERE offendee = ${msg.mentions.users.first().id}`, function(err, tabl) {
                                 console.log(msg.mentions.members.first().premiumSinceTimestamp);
                                 let boosting = "";
-                                if (msg.mentions.members.first().premiumSinceTimestamp == 0) {
+                                if (msg.mentions.members.first().premiumSinceTimestamp == 0 || msg.mentions.members.first().premiumSinceTimestamp == null) {
                                     boosting = "Not Boosting"
                                 }
                                 else {
@@ -537,6 +537,7 @@ client.on('message', msg => {
                                 .setColor('#ee38ff')
                                 .setTitle(`${msg.mentions.members.first().displayName}'s Information`)
                                 .addField("Account info", `Joined server: ${moment(msg.mentions.members.first().joinedAt).format("M/D/YY h:mm A")} \nAccount created: ${moment(msg.mentions.users.first().createdAt).format("M/D/YY h:mm A")} \nBoosting since: ${boosting} \nTotal Infractions: ${tabl.length }`)
+                            
                                 sql.all(`SELECT time,action,reason,duration FROM userData WHERE offendee = ${msg.mentions.users.first().id} LIMIT 9`, function(err, tabl) {
                                     tabl.reverse().forEach(element => {
 

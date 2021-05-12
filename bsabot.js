@@ -529,7 +529,7 @@ client.on('message', msg => {
                                     boosting = "Not Boosting"
                                 }
                                 else {
-                                    booosting = moment(msg.mentions.members.first().premiumSinceTimestamp).format("M/D/YY h:mm A")
+                                    boosting = moment(msg.mentions.members.first().premiumSinceTimestamp).format("M/D/YY h:mm A")
                                 }
                                 infoEmbed = new Discord.MessageEmbed()
                                 .setColor('#ee38ff')

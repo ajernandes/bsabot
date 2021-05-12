@@ -606,6 +606,10 @@ client.on('messageReactionAdd', (reaction, user) => {
                 role = msg.channel.guild.roles.cache.find(role => role.name === "MC-Announcements");
                 if (role) reaction.message.guild.member(user).roles.add(role);
                 break;
+            case "🎙":
+                role = msg.channel.guild.roles.cache.find(role => role.name === "PC-Announcements");
+                if (role) reaction.message.guild.member(user).roles.add(role);
+                break;
             default:
                 role = msg.channel.guild.roles.cache.find(role => role.name === emoji.name);
                 if (role) reaction.message.guild.member(user).roles.add(role);
@@ -690,6 +694,10 @@ client.on('messageReactionRemove', (reaction, user) => {
                 break;
             case "diamond":
                 role = msg.channel.guild.roles.cache.find(role => role.name === "MC-Announcements");
+                if (role) reaction.message.guild.member(user).roles.remove(role);
+                break;
+            case "🎙":
+                role = msg.channel.guild.roles.cache.find(role => role.name === "PC-Announcements");
                 if (role) reaction.message.guild.member(user).roles.remove(role);
                 break;
             default:

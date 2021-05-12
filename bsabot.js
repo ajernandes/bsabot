@@ -525,6 +525,7 @@ client.on('message', msg => {
                     if (msg.mentions.users.first()) {
                         try {
                             sql.all(`SELECT time,action,reason,duration FROM userData WHERE offendee = ${msg.mentions.users.first().id}`, function(err, tabl) {
+                                let boosting;
                                 if (msg.mentions.members.first().premiumSinceTimestamp === 0) {
                                     boosting = "Not Boosting"
                                 }
@@ -534,7 +535,7 @@ client.on('message', msg => {
                                 infoEmbed = new Discord.MessageEmbed()
                                 .setColor('#ee38ff')
                                 .setTitle(`${msg.mentions.members.first().displayName}'s Information`)
-                                .addField("Account info", `Joined server: ${moment(msg.mentions.members.first().joinedAt).format("M/D/YY h:mm A")} \n Account created: ${moment(msg.mentions.users.first().createdAt).format("M/D/YY h:mm A")} \n Boosting since: ${boosting} \nTotal Infractions: ${tabl.length }`)
+                                .addField("Account info", `Joined server: ${moment(msg.mentions.members.first().joinedAt).format("M/D/YY h:mm A")} \nAccount created: ${moment(msg.mentions.users.first().createdAt).format("M/D/YY h:mm A")} \nBoosting since: ${boosting} \nTotal Infractions: ${tabl.length }`)
                                 sql.all(`SELECT time,action,reason,duration FROM userData WHERE offendee = ${msg.mentions.users.first().id} LIMIT 9`, function(err, tabl) {
                                     tabl.reverse().forEach(element => {
                                         date = dateFormat(parseInt(element.time), "m/d/yy h:MM TT")

@@ -470,7 +470,7 @@ client.on('message', msg => {
                     console.log(message);
                     var param = msg.content.substring(6);
                     console.log(param)
-                    if (param >>> 0 === parseFloat(param) && param <= 100) {
+                    if (param >>> 0 === parseFloat(param) && param <= 99) {
                         try {
                             msg.channel.bulkDelete(parseInt(param) + 1)
                             logEvent(msg, 'Cleared Messages', `${param} messages`);
@@ -480,7 +480,7 @@ client.on('message', msg => {
                         }
                     }
                     else {
-                        msg.reply("Please enter a valid number of seconds (0 - 21600).") 
+                        msg.reply("Please enter a valid number of messages (1 - 99).") 
                     }
                 }
                 else {
@@ -496,8 +496,11 @@ client.on('message', msg => {
                     if (msg.mentions.users.first()) {
                         try {
                             let reason = msg.content.split(' ').slice(2).join(' ')
-                            console.log(message);
-                            client.users.cache.get(msg.mentions.members.first().id).send(`\`ModMail message from Scoutcord Leadership:\` \n ${reason}`)
+                            let attachmentString = "";
+                            (msg.attachments).array().forEach(function(attachment) {
+                                attachmentString = attachmentString + attachment.url + "\n";
+                              })        
+                            client.users.cache.get(msg.mentions.members.first().id).send(`\`ModMail message from Scoutcord Leadership:\` \n ${reason} +\n ${attachmentString}`)
                         }
                         catch{
                             msg.reply("❌ I can't do that!");
@@ -630,7 +633,7 @@ client.on('messageReactionAdd', (reaction, user) => {
             });
         }
     }
-    else if (msg.channel.id === bsabot_config.mcAnnocReq && !user.bot && reaction.message.member.roles.find(r => r.name === "MC-Admin")) {
+    else if (msg.channel.id === bsabot_config.mcAnnocReq && !user.bot && (reaction.message.guild.roles.cache.find(r => r.name === "MC-Admin") || reaction.message.member.permissions.has("ADMINISTRATOR"))) {
         if (emoji.name === "✅") {
             msg.channel.messages.fetch(msg.id)
                 .then(message => {

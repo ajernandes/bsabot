@@ -524,7 +524,7 @@ client.on('message', msg => {
                     }
                     if (msg.mentions.users.first()) {
                         try {
-                            sql.all(`SELECT time,action,reason,duration FROM userData WHERE offendee = ${msg.mentions.users.first().id}`, function(err, tabl) {
+                            sql.all(`SELECT time, action, reason, duration FROM userData WHERE offendee = ${msg.mentions.users.first().id}`, function(err, tabl) {
                                 console.log(msg.mentions.members.first().premiumSinceTimestamp);
                                 let boosting = "";
                                 if (msg.mentions.members.first().premiumSinceTimestamp == 0 || msg.mentions.members.first().premiumSinceTimestamp == null) {
@@ -889,6 +889,23 @@ function logEvent(msg, action, reason = "unspecified", duration, isAuto = false,
                         .addField("Reason:", reason, true)
                         .addField("Duration:", ms(duration, { long: true }));
                 }
+                if (action == 'Warned') {
+                    sql.all(`SELECT time, offendee FROM userData WHERE action = 'Warned' AND offendee = ${offendee}`, function(err, tabl) {
+                        try {
+                            if (tabl.length > 3 && tabl[2].time < Date.now() + 30 * 60 * 1000) {
+                                let reason = "Too many warnings."
+                                let member = msg.mentions.users.first();
+                                let role = msg.member.guild.roles.cache.find(role => role.name === "Muted");
+                                if (role) msg.guild.members.cache.get(offendee).roles.add(role);
+                                sql.run("INSERT INTO userData (offendee, time, action, reason, author, duration, active) VALUES (?, ?, ?, ?, ?, ?, ?)", [offendee, Date.now(), "Temporarily Muted", reason, author, duration, 'true'])
+
+                            }
+                        }
+                        catch {
+                            console.error("not enough entries");
+                        }
+                    })
+                }
             }
             else if (['Set Slowmode','Cleared Messages'].includes(action)) {
                 var logEmbed = new Discord.MessageEmbed()
@@ -899,7 +916,7 @@ function logEvent(msg, action, reason = "unspecified", duration, isAuto = false,
                     .setColor('#ee38ff')
                     .setTitle(`✅ ${action} (${reason})`)
             }
-            try{
+            try {
                 chn.send(logEmbed);
                 if (action === 'Cleared Messages') {
                 msg.channel.send(respEmbed)
@@ -947,7 +964,7 @@ function isSwear(msg) {
 }
 
 setInterval(function(){ 
-    sql.each("SELECT MAX(time),offendee,duration,active FROM userData WHERE action = 'Temporarily Muted' AND active = 'true'  GROUP BY offendee", function(err, tabl) {
+    sql.each("SELECT MAX(time),offendee,duration,active FROM userData WHERE action = 'Temporarily Muted' AND active = 'true' GROUP BY offendee", function(err, tabl) {
         if(tabl && (parseInt(tabl['MAX(time)']) + parseInt(tabl.duration) <= Date.now())) {
             try {
                 guild = client.guilds.cache.get(bsabot_config.serverID);

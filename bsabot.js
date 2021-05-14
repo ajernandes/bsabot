@@ -502,7 +502,7 @@ client.on('message', msg => {
                             (msg.attachments).array().forEach(function(attachment) {
                                 attachmentString = attachmentString + attachment.url + "\n";
                               })        
-                            client.users.cache.get(msg.mentions.members.first().id).send(`\`ModMail message from Scoutcord Leadership:\` \n ${reason} +\n ${attachmentString}`)
+                            client.users.cache.get(msg.mentions.members.first().id).send(`\`ModMail message from Scoutcord Leadership:\` \n ${reason} \n ${attachmentString}`)
                         }
                         catch{
                             msg.reply("❌ I can't do that!");
@@ -712,6 +712,10 @@ client.on('messageReactionAdd', (reaction, user) => {
     }
     else if (msg.channel.id === bsabot_config.mcAnnocReq && !user.bot && (reaction.message.guild.roles.cache.find(r => r.name === "MC-Admin") || reaction.message.member.permissions.has("ADMINISTRATOR"))) {
         if (emoji.name === "✅") {
+            msg.channel.messages.fetch(msg.id)
+                .then(message => {
+                    message.reactions.removeAll();
+            });
             try {
                 if (msg.content.startsWith(".delay ")) {
                     let duration = msg.content.split(' ')[2];
@@ -773,7 +777,7 @@ client.on('messageReactionAdd', (reaction, user) => {
                 else {
                 msg.channel.messages.fetch(msg.id)
                     .then(message => {
-                        client.channels.fetch(bsabot_config.announcements)
+                        client.channels.fetch(bsabot_config.mcAnnouncements)
                             .then (chn => { 
                                 let attachmentString = "";
                                 (message.attachments).array().forEach(function(attachment) {
@@ -855,7 +859,7 @@ client.on('guildMemberAdd', member => {
 
 client.login(token);
 
-function logEvent(msg, action, reason = "unspecified", duration, isAuto = false, offendee) {
+function logEvent(msg, action, reason = "unspecified", duration, isAuto = false, offendee, checkWarnings = true) {
     if (reason === null || reason === "") reason = "unspecified";
     client.channels.fetch(bsabot_config.modlog)
         .then(chn => {
@@ -889,16 +893,14 @@ function logEvent(msg, action, reason = "unspecified", duration, isAuto = false,
                         .addField("Reason:", reason, true)
                         .addField("Duration:", ms(duration, { long: true }));
                 }
-                if (action == 'Warned') {
+                if (action == 'Warned' && checkWarnings) {
                     sql.all(`SELECT time, offendee FROM userData WHERE action = 'Warned' AND offendee = ${offendee}`, function(err, tabl) {
                         try {
                             if (tabl.length > 3 && tabl[2].time < Date.now() + 30 * 60 * 1000) {
-                                let reason = "Too many warnings."
-                                let member = msg.mentions.users.first();
                                 let role = msg.member.guild.roles.cache.find(role => role.name === "Muted");
                                 if (role) msg.guild.members.cache.get(offendee).roles.add(role);
-                                sql.run("INSERT INTO userData (offendee, time, action, reason, author, duration, active) VALUES (?, ?, ?, ?, ?, ?, ?)", [offendee, Date.now(), "Temporarily Muted", reason, author, duration, 'true'])
-
+                                logEvent(msg, "Temporarily Muted", "Too many warnings", 60 * 60 * 1000, true, offendee, false)
+                                //sql.run("INSERT INTO userData (offendee, time, action, reason, author, duration, active) VALUES (?, ?, ?, ?, ?, ?, ?)", [offendee, Date.now(), "Temporarily Muted", reason, author, 60 * 60 * 1000, 'true'])
                             }
                         }
                         catch {

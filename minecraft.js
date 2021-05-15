@@ -1,6 +1,6 @@
 const util = require('minecraft-server-util');
 const Discord = require('discord.js');
-
+const fs = require('fs');
 const mcIp = "bsamemes.mcs.cx";
 const token = fs.readFileSync("./minecraft_token.txt", "utf-8");
 const client = new Discord.Client();

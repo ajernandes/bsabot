@@ -896,7 +896,7 @@ function logEvent(msg, action, reason = "unspecified", duration, isAuto = false,
                 if (action == 'Warned' && checkWarnings) {
                     sql.all(`SELECT time, offendee FROM userData WHERE action = 'Warned' AND offendee = ${offendee}`, function(err, tabl) {
                         try {
-                            if (tabl.length > 3 && tabl[2].time < Date.now() + 30 * 60 * 1000) {
+                            if (tabl.length > 3 && tabl.reverse()[2].time < Date.now() + 30 * 60 * 1000) {
                                 let role = msg.member.guild.roles.cache.find(role => role.name === "Muted");
                                 if (role) msg.guild.members.cache.get(offendee).roles.add(role);
                                 logEvent(msg, "Temporarily Muted", "Too many warnings", 60 * 60 * 1000, true, offendee, false)

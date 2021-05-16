@@ -20,6 +20,7 @@ sql.run("CREATE TABLE IF NOT EXISTS userData (offendee TEXT, time TEXT, action T
 sql.run("CREATE TABLE IF NOT EXISTS announcements (message TEXT, sendTime TEXT, channel TEXT)");
 
 client.on('ready', () => {
+    console.log(/^((\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])|[\u0020-\u007e\u00a0-\u00ff])*$/.test(""))
     console.log(`Logged in as ${client.user.tag}!`);
     client.user.setPresence({
         status: 'online',
@@ -35,6 +36,13 @@ client.on("channelCreate", function(channel) {
     if (channel.type != 'dm' && channel.type != 'voice' && channel.type != 'stage') {
         let role = channel.guild.roles.cache.find(role => role.name === "Muted");
         channel.updateOverwrite(role.id, { SEND_MESSAGES: false });
+    }
+});
+
+client.on("guildMemberUpdate", function(oldMember, newMember){
+    if (!/^((\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])|[\u0020-\u007e\u00a0-\u00ff])*$/.test(newMember.displayName)) {
+        console.log("forbidden name")
+        newMember.send("Your name is not allowed as it contains non-typable characters. Please change your nickname to one that contains only characters represented on your keyboard, and emoji")
     }
 });
 

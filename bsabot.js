@@ -8,6 +8,7 @@ const fs = require("fs");
 const bsabot_config = require('./bsabot_config');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const moment = require('moment');
+const { annocReq } = require('./bsabot_config');
 var infoEmbed;
 const token = bsabot_config.token;
 const prefix = '.';
@@ -30,12 +31,29 @@ client.on('ready', () => {
     
   });
 
-client.on("channelCreate", function(channel){
-    let role = channel.guild.roles.cache.find(role => role.name === "Muted");
-    channel.updateOverwrite(role.id, { SEND_MESSAGES: false });
+client.on("channelCreate", function(channel) {
+    if (channel.type != 'dm' && channel.type != 'voice' && channel.type != 'stage') {
+        let role = channel.guild.roles.cache.find(role => role.name === "Muted");
+        channel.updateOverwrite(role.id, { SEND_MESSAGES: false });
+    }
 });
 
 client.on('message', msg => {
+    if (msg.channel.id === bsabot_config.modmail && msg.reference != null) {
+        try {
+            msg.channel.messages.fetch(msg.reference.messageID).then(ref =>{
+                if (ref.mentions.users.first() && ref.author.bot) {
+                    let attachmentString = "";
+                    (msg.attachments).array().forEach(function(attachment) {
+                        attachmentString = attachmentString + attachment.url + "\n";
+                      })        
+                    client.users.cache.get(ref.mentions.members.first().id).send(`\`ModMail message from Scoutcord Leadership:\` \n ${msg.content} \n ${attachmentString}`)     
+                }
+            })
+        } catch {
+            msg.reply("❌ I can't do that!");
+        }
+    }
     if ((msg.channel.id === bsabot_config.annocReq || msg.channel.id === bsabot_config.mcAnnocReq) && !msg.author.bot) {
         msg.react("✅");
         msg.react("❌");

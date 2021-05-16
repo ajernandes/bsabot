@@ -8,7 +8,6 @@ const fs = require("fs");
 const bsabot_config = require('./bsabot_config');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 const moment = require('moment');
-const { mcAnnouncements } = require('./bsabot_config');
 var infoEmbed;
 const token = bsabot_config.token;
 const prefix = '.';
@@ -31,15 +30,31 @@ client.on('ready', () => {
     
   });
 
+client.on("channelCreate", function(channel){
+    let role = channel.guild.roles.cache.find(role => role.name === "Muted");
+    channel.updateOverwrite(role.id, { SEND_MESSAGES: false });
+});
+
 client.on('message', msg => {
     if ((msg.channel.id === bsabot_config.annocReq || msg.channel.id === bsabot_config.mcAnnocReq) && !msg.author.bot) {
         msg.react("✅");
         msg.react("❌");
     }
-    if (isSwear(msg) && !bsabot_config.adminCatsChn.includes(msg.channel.parent.id) && !bsabot_config.adminCatsChn.includes(msg.channel.id) && !msg.author.bot) {
+    if (msg.guild != null && isSwear(msg) && !bsabot_config.adminCatsChn.includes(msg.channel.parent.id) && !bsabot_config.adminCatsChn.includes(msg.channel.id) && !msg.author.bot) {
         msg.reply("Watch your language");
         logEvent(msg, 'Warned', `Swear filter: ${msg.content}`, null, true);
         msg.delete();
+    }
+    if (msg.guild === null && !msg.author.bot) {
+        client.channels.fetch(bsabot_config.modmail)
+            .then(channel => {
+                let attachmentString = "";
+                (msg.attachments).array().forEach(function(attachment) {
+                    attachmentString = attachmentString + attachment.url + "\n";
+                  })                  
+                channel.send(`Message from <@${msg.author.id}> (${msg.author.id}): \n ${msg.content} \n ${attachmentString}`);
+                msg.react("👍");
+            });
     }
     if (msg.content[0] === `${prefix}` && msg.guild != null) {
         message = msg.content.substring(1).split(' ');
@@ -574,16 +589,6 @@ client.on('message', msg => {
                 break;
         }
     }
-    else if (msg.guild === null && !msg.author.bot) {
-        client.channels.fetch(bsabot_config.modmail)
-            .then(channel => {
-                let attachmentString = "";
-                (msg.attachments).array().forEach(function(attachment) {
-                    attachmentString = attachmentString + attachment.url + "\n";
-                  })                  
-                channel.send(`Message from <@${msg.author.id}> (${msg.author.id}): \n ${msg.content} \n ${attachmentString}`);
-            });
-    }
 });
 
 client.on('messageReactionAdd', (reaction, user) => {
@@ -896,7 +901,7 @@ function logEvent(msg, action, reason = "unspecified", duration, isAuto = false,
                 if (action == 'Warned' && checkWarnings) {
                     sql.all(`SELECT time, offendee FROM userData WHERE action = 'Warned' AND offendee = ${offendee}`, function(err, tabl) {
                         try {
-                            if (tabl.length > 3 && tabl.reverse()[2].time > Date.now() - 30 * 60 * 1000) {
+                            if (tabl.length >= 3 && tabl.reverse()[2].time > Date.now() - 30 * 60 * 1000) {
                                 let role = msg.member.guild.roles.cache.find(role => role.name === "Muted");
                                 if (role) msg.guild.members.cache.get(offendee).roles.add(role);
                                 logEvent(msg, "Temporarily Muted", "Too many warnings", 60 * 60 * 1000, true, offendee, false)

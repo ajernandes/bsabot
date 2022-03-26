@@ -28,7 +28,6 @@ client.on('ready', () => {
             type: 'LISTENING',
         }
     })
-    
   });
 
 client.on("channelCreate", function(channel) {
@@ -46,8 +45,8 @@ client.on('message', msg => {
                     let attachmentString = "";
                     (msg.attachments).array().forEach(function(attachment) {
                         attachmentString = attachmentString + attachment.url + "\n";
-                      })        
-                    client.users.cache.get(ref.mentions.members.first().id).send(`\`ModMail message from Scoutcord Leadership:\` \n ${msg.content} \n ${attachmentString}`)     
+                      })
+                    client.users.cache.get(ref.mentions.members.first().id).send(`\`ModMail message from Scoutcord Leadership:\` \n ${msg.content} \n ${attachmentString}`)
                 }
             })
         } catch {
@@ -203,7 +202,7 @@ client.on('message', msg => {
                     }
                     if (msg.mentions.users.first()) {
                         let duration = msg.content.split(' ')[2];
-                        
+
                         //console.log(duration);
                         if (/(\.*[0-9]+([ywdhms]|^mo$))+/i.test(duration)) {
                             var secDuration = 0;
@@ -245,7 +244,7 @@ client.on('message', msg => {
                                             break;
                                         default:
                                             return;
-                                            break;     
+                                            break;
                                     }
                                     duration = duration.substring(i + 1);
                                 }
@@ -267,7 +266,7 @@ client.on('message', msg => {
                     }
                     else {
                         msg.reply("❌ User cannot be found");
-                    }  
+                    }
                 }
                 else {
                     msg.reply("❌ You can't use that!");
@@ -419,7 +418,7 @@ client.on('message', msg => {
                                             break;
                                         default:
                                             return;
-                                            break;     
+                                            break;
                                     }
                                     duration = duration.substring(i + 1);
                                 }
@@ -597,7 +596,7 @@ client.on('message', msg => {
                 }
                 break;
             case "ip":
-                msg.channel.send(`\`${bsabot_config.mcIp}\` | Java\nCheck out more in <#${bsabot_config.minecraftInfo}>`);
+                msg.channel.send(`\`${bsabot_config.mcIp}\` | Java\n\`${bsabot_config.mcIp}\` Port 29999 | Bedrock\nCheck out <#${bsabot_config.minecraftInfo}> for help!`);
                 break;
             case "invite":
                 msg.channel.send(bsabot_config.invite);
@@ -623,6 +622,10 @@ client.on('messageReactionAdd', (reaction, user) => {
                 break;
             case "Exploring":
                 role = msg.channel.guild.roles.cache.find(role => role.name === "Explorer");
+                if (role) reaction.message.guild.member(user).roles.add(role);
+                break;
+            case "oa":
+                role = msg.channel.guild.roles.cache.find(role => role.name === "NOAC");
                 if (role) reaction.message.guild.member(user).roles.add(role);
                 break;
             case "📣":
@@ -840,6 +843,10 @@ client.on('messageReactionRemove', (reaction, user) => {
                 break;
             case "Exploring":
                 role = msg.channel.guild.roles.cache.find(role => role.name === "Explorer");
+                if (role) reaction.message.guild.member(user).roles.remove(role);
+                break;
+            case "oa":
+                role = msg.channel.guild.roles.cache.find(role => role.name === "NOAC");
                 if (role) reaction.message.guild.member(user).roles.remove(role);
                 break;
             case "📣":
